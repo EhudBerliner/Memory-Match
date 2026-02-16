@@ -1,22 +1,23 @@
 // Memory Match PWA - Service Worker
-// Version: 2.1.0
+// Version: 2.2.0
 // Strategy: Network-first with Cache fallback for offline support
 
-const CACHE_NAME = 'memory-match-v2.1.0';
+const CACHE_NAME = 'memory-match-v2.2.0';
 const RUNTIME_CACHE = 'memory-match-runtime';
 
 // Files to cache immediately on install
 const STATIC_ASSETS = [
     './',
     './index.html',
-    './manifest.json'
+    './manifest.json',
+    './logo.png'
 ];
 
 // ============================================
 // Install Event - Cache static assets
 // ============================================
 self.addEventListener('install', (event) => {
-    console.log('[SW] Installing Service Worker v2.1.0...');
+    console.log('[SW] Installing Service Worker v2.2.0...');
     
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -35,7 +36,7 @@ self.addEventListener('install', (event) => {
 // Activate Event - Clean old caches
 // ============================================
 self.addEventListener('activate', (event) => {
-    console.log('[SW] Activating Service Worker v2.1.0...');
+    console.log('[SW] Activating Service Worker v2.2.0...');
     
     event.waitUntil(
         caches.keys()

@@ -7,7 +7,8 @@
     <meta name="description" content="משחק זיכרון מתקדם - Memory Match PWA">
     <title>Memory Match Pro</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%232563eb' width='100' height='100' rx='15'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>🧠</text></svg>">
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
     
     <style>
         * {
@@ -490,6 +491,117 @@
                 padding: 24px;
             }
         }
+
+        /* Install Prompt Banner */
+        .install-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+            color: white;
+            padding: 16px;
+            box-shadow: 0 -4px 20px var(--shadow);
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 999;
+            display: none;
+        }
+
+        .install-banner.show {
+            display: block;
+            transform: translateY(0);
+        }
+
+        .install-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .install-icon {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .install-icon img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .install-text {
+            flex: 1;
+        }
+
+        .install-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .install-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .install-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .install-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .install-btn-primary {
+            background: white;
+            color: var(--accent);
+        }
+
+        .install-btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .install-btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .install-btn-secondary:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 500px) {
+            .install-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .install-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .install-btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -499,7 +611,7 @@
             <div class="app-title">
                 <span>🧠</span>
                 <span>Memory Match</span>
-                <span class="version" id="versionBtn">v2.1.0</span>
+                <span class="version" id="versionBtn">v2.2.0</span>
             </div>
             <div class="header-controls">
                 <button class="icon-btn" id="hintBtn" title="רמז">💡</button>
@@ -619,7 +731,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">איפוס אפליקציה</div>
-                <div class="modal-subtitle">גרסה 2.1.0</div>
+                <div class="modal-subtitle">גרסה 2.2.0</div>
             </div>
             
             <p style="margin-bottom: 20px; color: var(--text-secondary); line-height: 1.6;">
@@ -652,6 +764,23 @@
 
             <button class="btn btn-primary" id="confirmReset">איפוס והתקנה מחדש</button>
             <button class="btn btn-secondary" id="cancelReset">ביטול</button>
+        </div>
+    </div>
+
+    <!-- Install Prompt Banner -->
+    <div class="install-banner" id="installBanner">
+        <div class="install-content">
+            <div class="install-icon">
+                <img src="logo.png" alt="Memory Match">
+            </div>
+            <div class="install-text">
+                <div class="install-title">התקן את Memory Match</div>
+                <div class="install-subtitle">גישה מהירה ומשחק ללא חיבור לאינטרנט</div>
+            </div>
+            <div class="install-actions">
+                <button class="install-btn install-btn-primary" id="installBtn">התקן</button>
+                <button class="install-btn install-btn-secondary" id="dismissInstallBtn">התעלם</button>
+            </div>
         </div>
     </div>
 
@@ -732,9 +861,23 @@
                 
                 const card = this.grid[cardId];
                 
-                // Validate flip
-                if (!card || card.state !== 'hidden' || this.flippedCards.length >= 2) {
+                // Validate flip - can't flip matched cards
+                if (!card || card.state === 'matched') {
                     return false;
+                }
+
+                // If card is already flipped, ignore
+                if (card.state === 'flipped') {
+                    return false;
+                }
+
+                // If trying to flip a third card, close the first two
+                if (this.flippedCards.length === 2) {
+                    const [id1, id2] = this.flippedCards;
+                    this.grid[id1].state = 'hidden';
+                    this.grid[id2].state = 'hidden';
+                    this.flippedCards = [];
+                    return 'close_previous'; // Signal to close previous cards
                 }
 
                 // Flip the card
@@ -1027,6 +1170,10 @@
                 this.currentDifficulty = 'easy';
                 this.currentTheme = 'animals';
                 
+                // Install prompt
+                this.deferredPrompt = null;
+                this.isInstalled = false;
+                
                 this.init();
             }
 
@@ -1036,6 +1183,7 @@
                 this.restoreGameState();
                 this.bindEvents();
                 this.registerServiceWorker();
+                this.setupInstallPrompt();
                 
                 // If no saved game, show settings
                 if (!this.gameStarted) {
@@ -1144,6 +1292,24 @@
                 const result = this.engine.flipCard(cardId);
                 
                 if (!result) return;
+
+                // Handle closing previous cards
+                if (result === 'close_previous') {
+                    // Update UI to close the previous two cards
+                    this.engine.grid.forEach((card, index) => {
+                        if (card.state === 'hidden' && !card.matched) {
+                            this.ui.updateCard(index, 'hidden');
+                        }
+                    });
+                    // Now flip the new card
+                    setTimeout(() => {
+                        this.engine.flipCard(cardId);
+                        this.ui.updateCard(cardId, 'flipped');
+                        this.ui.triggerHaptic('light');
+                        this.saveGameState();
+                    }, 300);
+                    return;
+                }
 
                 this.ui.updateCard(cardId, 'flipped');
                 this.ui.triggerHaptic('light');
@@ -1336,6 +1502,9 @@
                     localStorage.removeItem('theme');
                 }
 
+                // Clear install prompt dismissal
+                localStorage.removeItem('installPromptDismissed');
+
                 // Unregister service worker
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.getRegistrations().then(registrations => {
@@ -1354,6 +1523,86 @@
                 setTimeout(() => {
                     window.location.reload();
                 }, 500);
+            }
+
+            // Setup Install Prompt
+            setupInstallPrompt() {
+                // Check if already installed
+                if (window.matchMedia('(display-mode: standalone)').matches) {
+                    this.isInstalled = true;
+                    return;
+                }
+
+                // Check if user dismissed the prompt
+                if (localStorage.getItem('installPromptDismissed') === 'true') {
+                    return;
+                }
+
+                // Listen for the beforeinstallprompt event
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    this.deferredPrompt = e;
+                    
+                    // Show install banner after a delay
+                    setTimeout(() => {
+                        this.showInstallBanner();
+                    }, 3000);
+                });
+
+                // Bind install button events
+                document.getElementById('installBtn').addEventListener('click', () => {
+                    this.installApp();
+                });
+
+                document.getElementById('dismissInstallBtn').addEventListener('click', () => {
+                    this.dismissInstallPrompt();
+                });
+
+                // Check if app was installed
+                window.addEventListener('appinstalled', () => {
+                    this.isInstalled = true;
+                    this.hideInstallBanner();
+                    console.log('PWA was installed');
+                });
+            }
+
+            // Show install banner
+            showInstallBanner() {
+                if (!this.deferredPrompt || this.isInstalled) return;
+                
+                const banner = document.getElementById('installBanner');
+                banner.classList.add('show');
+            }
+
+            // Hide install banner
+            hideInstallBanner() {
+                const banner = document.getElementById('installBanner');
+                banner.classList.remove('show');
+            }
+
+            // Install app
+            async installApp() {
+                if (!this.deferredPrompt) return;
+
+                // Show the install prompt
+                this.deferredPrompt.prompt();
+
+                // Wait for the user to respond to the prompt
+                const { outcome } = await this.deferredPrompt.userChoice;
+                
+                console.log(`User response to the install prompt: ${outcome}`);
+
+                // Clear the deferredPrompt
+                this.deferredPrompt = null;
+
+                // Hide the banner
+                this.hideInstallBanner();
+            }
+
+            // Dismiss install prompt
+            dismissInstallPrompt() {
+                localStorage.setItem('installPromptDismissed', 'true');
+                this.hideInstallBanner();
             }
 
             // Register Service Worker
