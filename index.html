@@ -492,6 +492,25 @@
             }
         }
 
+        /* Confetti Animation */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            top: -10px;
+            pointer-events: none;
+            z-index: 2000;
+            border-radius: 2px;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(110vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
         /* Install Prompt Banner */
         .install-banner {
             position: fixed;
@@ -611,7 +630,7 @@
             <div class="app-title">
                 <span>🧠</span>
                 <span>Memory Match</span>
-                <span class="version" id="versionBtn">v2.2.0</span>
+                <span class="version" id="versionBtn"></span>
             </div>
             <div class="header-controls">
                 <button class="icon-btn" id="hintBtn" title="רמז">💡</button>
@@ -731,7 +750,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">איפוס אפליקציה</div>
-                <div class="modal-subtitle">גרסה 2.2.0</div>
+                <div class="modal-subtitle" id="resetModalVersion"></div>
             </div>
             
             <p style="margin-bottom: 20px; color: var(--text-secondary); line-height: 1.6;">
@@ -785,6 +804,11 @@
     </div>
 
     <script>
+        // ============================================
+        // VERSION MANAGEMENT
+        // ============================================
+        const APP_VERSION = '2.3.0';
+
         // ============================================
         // 1. MemoryEngine - Game Logic Engine
         // ============================================
@@ -871,13 +895,18 @@
                     return false;
                 }
 
-                // If trying to flip a third card, close the first two
+                // If trying to flip a third card, close the first two and flip the new one
                 if (this.flippedCards.length === 2) {
                     const [id1, id2] = this.flippedCards;
                     this.grid[id1].state = 'hidden';
                     this.grid[id2].state = 'hidden';
                     this.flippedCards = [];
-                    return 'close_previous'; // Signal to close previous cards
+                    
+                    // Now flip the new card
+                    card.state = 'flipped';
+                    this.flippedCards.push(cardId);
+                    
+                    return 'reset_and_flip'; // Signal to UI
                 }
 
                 // Flip the card
@@ -1100,6 +1129,9 @@
                     highScoreIndicator.style.display = 'none';
                 }
 
+                // Create confetti animation
+                this.createConfetti();
+
                 this.showModal('victoryModal');
                 this.triggerHaptic('success');
             }
@@ -1114,6 +1146,27 @@
                         victory: [100, 50, 100, 50, 200]
                     };
                     navigator.vibrate(patterns[type] || patterns.light);
+                }
+            }
+
+            // Create confetti effect
+            createConfetti() {
+                const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
+                
+                for (let i = 0; i < 60; i++) {
+                    setTimeout(() => {
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti';
+                        confetti.style.left = Math.random() * 100 + '%';
+                        confetti.style.width = (Math.random() * 8 + 6) + 'px';
+                        confetti.style.height = (Math.random() * 8 + 6) + 'px';
+                        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.animation = `confettiFall ${2 + Math.random() * 2}s linear`;
+                        confetti.style.animationDelay = '0s';
+                        document.body.appendChild(confetti);
+
+                        setTimeout(() => confetti.remove(), 4500);
+                    }, i * 30);
                 }
             }
 
@@ -1179,6 +1232,7 @@
 
             // Initialize app
             init() {
+                this.setVersionDisplay();
                 this.loadSettings();
                 this.restoreGameState();
                 this.bindEvents();
@@ -1189,6 +1243,12 @@
                 if (!this.gameStarted) {
                     this.ui.showModal('settingsModal');
                 }
+            }
+
+            // Set version display
+            setVersionDisplay() {
+                document.getElementById('versionBtn').textContent = `v${APP_VERSION}`;
+                document.getElementById('resetModalVersion').textContent = `גרסה ${APP_VERSION}`;
             }
 
             // Bind all event listeners
@@ -1293,21 +1353,18 @@
                 
                 if (!result) return;
 
-                // Handle closing previous cards
-                if (result === 'close_previous') {
-                    // Update UI to close the previous two cards
+                // Handle closing previous cards and flipping new one
+                if (result === 'reset_and_flip') {
+                    // Close all cards that should be hidden
                     this.engine.grid.forEach((card, index) => {
-                        if (card.state === 'hidden' && !card.matched) {
+                        if (card.state === 'hidden') {
                             this.ui.updateCard(index, 'hidden');
+                        } else if (card.state === 'flipped') {
+                            this.ui.updateCard(index, 'flipped');
                         }
                     });
-                    // Now flip the new card
-                    setTimeout(() => {
-                        this.engine.flipCard(cardId);
-                        this.ui.updateCard(cardId, 'flipped');
-                        this.ui.triggerHaptic('light');
-                        this.saveGameState();
-                    }, 300);
+                    this.ui.triggerHaptic('light');
+                    this.saveGameState();
                     return;
                 }
 
