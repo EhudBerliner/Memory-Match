@@ -2,7 +2,7 @@
   "name": "Memory Match Pro - משחק זיכרון",
   "short_name": "Memory Match",
   "description": "משחק זיכרון מתקדם עם רמות קושי שונות, נושאים מגוונים ומצב לא מקוון מלא",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "start_url": "./index.html",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],

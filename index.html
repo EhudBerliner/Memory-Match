@@ -807,7 +807,7 @@
         // ============================================
         // VERSION MANAGEMENT
         // ============================================
-        const APP_VERSION = '2.3.0';
+        const APP_VERSION = '2.3.1';
 
         // ============================================
         // 1. MemoryEngine - Game Logic Engine
@@ -881,11 +881,12 @@
 
             // Flip card
             flipCard(cardId) {
+                // Block any action if processing
                 if (this.isProcessing) return false;
                 
                 const card = this.grid[cardId];
                 
-                // Validate flip - can't flip matched cards
+                // Validate flip - can't flip matched cards or non-existent cards
                 if (!card || card.state === 'matched') {
                     return false;
                 }
@@ -897,6 +898,9 @@
 
                 // If trying to flip a third card, close the first two and flip the new one
                 if (this.flippedCards.length === 2) {
+                    // Block further flips while resetting
+                    this.isProcessing = true;
+                    
                     const [id1, id2] = this.flippedCards;
                     this.grid[id1].state = 'hidden';
                     this.grid[id2].state = 'hidden';
@@ -905,6 +909,11 @@
                     // Now flip the new card
                     card.state = 'flipped';
                     this.flippedCards.push(cardId);
+                    
+                    // Release the lock after a short delay
+                    setTimeout(() => {
+                        this.isProcessing = false;
+                    }, 100);
                     
                     return 'reset_and_flip'; // Signal to UI
                 }
@@ -941,14 +950,16 @@
                     card2.matched = true;
                     this.matchedPairs++;
                     this.correctMatches++;
+                    
+                    // Release lock immediately for matches
+                    this.flippedCards = [];
+                    this.isProcessing = false;
                 } else {
-                    // Flip back
-                    card1.state = 'hidden';
-                    card2.state = 'hidden';
+                    // Keep cards flipped but clear the array
+                    // DON'T release lock yet - will be released by AppManager after delay
+                    this.flippedCards = [];
+                    // isProcessing stays true until cards are flipped back
                 }
-
-                this.flippedCards = [];
-                this.isProcessing = false;
 
                 return {
                     isMatch,
@@ -956,6 +967,13 @@
                     card2: id2,
                     isComplete: this.isGameComplete()
                 };
+            }
+
+            // Method to release lock and flip cards back (called by AppManager)
+            flipCardsBack(id1, id2) {
+                this.grid[id1].state = 'hidden';
+                this.grid[id2].state = 'hidden';
+                this.isProcessing = false;
             }
 
             // Check if game is complete
@@ -1342,7 +1360,16 @@
 
             // Handle card click
             handleCardClick(cardElement) {
+                // Prevent clicks if processing
+                if (this.engine.isProcessing) return;
+                
                 const cardId = parseInt(cardElement.dataset.cardId);
+                
+                // Prevent clicking the same card or already matched/flipped cards
+                const card = this.engine.grid[cardId];
+                if (!card || card.state === 'matched' || card.state === 'flipped') {
+                    return;
+                }
                 
                 // Start timer on first click
                 if (!this.isTimerRunning && this.gameStarted) {
@@ -1394,7 +1421,9 @@
                     this.ui.updateCard(card2, 'matched');
                     this.ui.triggerHaptic('success');
                 } else {
+                    // Keep lock active during delay
                     setTimeout(() => {
+                        this.engine.flipCardsBack(card1, card2);
                         this.ui.updateCard(card1, 'hidden');
                         this.ui.updateCard(card2, 'hidden');
                         this.ui.triggerHaptic('error');
