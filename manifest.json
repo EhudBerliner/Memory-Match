@@ -2,7 +2,7 @@
   "name": "Memory Match Pro - משחק זיכרון",
   "short_name": "Memory Match",
   "description": "משחק זיכרון מתקדם עם רמות קושי שונות, נושאים מגוונים ומצב לא מקוון מלא",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "start_url": "./index.html",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
@@ -43,39 +43,39 @@
   ],
   "shortcuts": [
     {
-      "name": "משחק קל",
+      "name": "משחק קל - 4×3",
       "short_name": "קל",
-      "description": "התחל משחק במצב קל (4x3)",
+      "description": "התחל משחק במצב קל - 12 קלפים (6 זוגות)",
       "url": "./index.html?difficulty=easy",
       "icons": [
         {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%2310b981' width='96' height='96' rx='20'/><text x='48' y='65' font-size='50' text-anchor='middle' fill='white'>😊</text></svg>",
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2310b981' width='100' height='100' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>😊</text></svg>",
           "sizes": "96x96",
           "type": "image/svg+xml"
         }
       ]
     },
     {
-      "name": "משחק בינוני",
+      "name": "משחק בינוני - 4×4",
       "short_name": "בינוני",
-      "description": "התחל משחק במצב בינוני (4x4)",
+      "description": "התחל משחק במצב בינוני - 16 קלפים (8 זוגות)",
       "url": "./index.html?difficulty=medium",
       "icons": [
         {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%23f59e0b' width='96' height='96' rx='20'/><text x='48' y='65' font-size='50' text-anchor='middle' fill='white'>🤔</text></svg>",
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23f59e0b' width='100' height='100' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>🤔</text></svg>",
           "sizes": "96x96",
           "type": "image/svg+xml"
         }
       ]
     },
     {
-      "name": "משחק קשה",
+      "name": "משחק קשה - 6×6",
       "short_name": "קשה",
-      "description": "התחל משחק במצב קשה (6x6)",
+      "description": "התחל משחק במצב קשה - 36 קלפים (18 זוגות)",
       "url": "./index.html?difficulty=hard",
       "icons": [
         {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%23ef4444' width='96' height='96' rx='20'/><text x='48' y='65' font-size='50' text-anchor='middle' fill='white'>😤</text></svg>",
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23ef4444' width='100' height='100' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>🔥</text></svg>",
           "sizes": "96x96",
           "type": "image/svg+xml"
         }
@@ -88,7 +88,7 @@
       "url": "./index.html?view=highscores",
       "icons": [
         {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%23fbbf24' width='96' height='96' rx='20'/><text x='48' y='65' font-size='50' text-anchor='middle' fill='white'>🏆</text></svg>",
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23fbbf24' width='100' height='100' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>🏆</text></svg>",
           "sizes": "96x96",
           "type": "image/svg+xml"
         }
