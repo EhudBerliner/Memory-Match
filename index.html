@@ -33,6 +33,9 @@
             --border: #cbd5e1;
             --shadow: rgba(15, 23, 42, 0.1);
             --card-shadow: rgba(37, 99, 235, 0.2);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
         [data-theme="dark"] {
@@ -47,6 +50,9 @@
             --border: #475569;
             --shadow: rgba(0, 0, 0, 0.3);
             --card-shadow: rgba(59, 130, 246, 0.3);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
         body {
@@ -58,6 +64,11 @@
             flex-direction: column;
             overflow: hidden;
             touch-action: pan-y;
+            /* Safe Areas for Notch */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
         }
 
         /* Header */
@@ -495,6 +506,189 @@
             }
         }
 
+        /* Toast System */
+        .toast-container {
+            position: fixed;
+            top: calc(env(safe-area-inset-top) + 80px);
+            right: 16px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 280px;
+            max-width: 400px;
+            pointer-events: auto;
+            transform: translateX(120%);
+            transition: transform 0.3s ease-out;
+            border-left: 4px solid var(--accent);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left-color: var(--success);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-message {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Network Status Banner */
+        .network-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ef4444;
+            color: white;
+            padding: 12px 16px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10000;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease-out;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .network-banner.show {
+            transform: translateY(0);
+        }
+
+        .network-banner.online {
+            background: #10b981;
+        }
+
+        /* Pull to Refresh */
+        .pull-to-refresh {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: top 0.2s;
+            z-index: 50;
+        }
+
+        .pull-to-refresh.pulling {
+            top: 10px;
+        }
+
+        .pull-to-refresh .spinner-ptr {
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Update Available Banner */
+        .update-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            padding: 16px;
+            box-shadow: 0 -4px 20px var(--shadow);
+            z-index: 9998;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+        }
+
+        .update-banner.show {
+            transform: translateY(0);
+        }
+
+        .update-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .update-text {
+            flex: 1;
+        }
+
+        .update-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .update-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .update-btn {
+            background: white;
+            color: #4f46e5;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .update-btn:active {
+            transform: scale(0.95);
+        }
+
         /* Confetti Animation */
         .confetti {
             position: fixed;
@@ -806,7 +1000,320 @@
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Network Status Banner -->
+    <div class="network-banner" id="networkBanner">
+        <span id="networkMessage">אין חיבור לאינטרנט</span>
+    </div>
+
+    <!-- Pull to Refresh Indicator -->
+    <div class="pull-to-refresh" id="pullToRefresh">
+        <div class="spinner-ptr"></div>
+    </div>
+
+    <!-- Update Available Banner -->
+    <div class="update-banner" id="updateBanner">
+        <div class="update-content">
+            <div class="update-text">
+                <div class="update-title">🎉 גרסה חדשה זמינה!</div>
+                <div class="update-subtitle">עדכן עכשיו לקבלת תכונות חדשות</div>
+            </div>
+            <button class="update-btn" id="updateBtn">עדכן עכשיו</button>
+        </div>
+    </div>
+
+    <!-- Version Management -->
+    <script src="version.js"></script>
+    
     <script>
+        // ============================================
+        // Toast Manager - Notification System
+        // ============================================
+        class ToastManager {
+            constructor() {
+                this.container = document.getElementById('toastContainer');
+                this.toasts = [];
+            }
+
+            show(message, type = 'info', duration = 3000) {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                const icons = {
+                    success: '✓',
+                    error: '✗',
+                    warning: '⚠',
+                    info: 'ℹ'
+                };
+
+                toast.innerHTML = `
+                    <div class="toast-icon">${icons[type] || icons.info}</div>
+                    <div class="toast-message">${message}</div>
+                    <button class="toast-close">×</button>
+                `;
+
+                this.container.appendChild(toast);
+                
+                // Show animation
+                setTimeout(() => toast.classList.add('show'), 10);
+
+                // Close button
+                toast.querySelector('.toast-close').addEventListener('click', () => {
+                    this.hide(toast);
+                });
+
+                // Auto hide
+                setTimeout(() => {
+                    this.hide(toast);
+                }, duration);
+
+                this.toasts.push(toast);
+                return toast;
+            }
+
+            hide(toast) {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                    this.toasts = this.toasts.filter(t => t !== toast);
+                }, 300);
+            }
+
+            success(message, duration) {
+                return this.show(message, 'success', duration);
+            }
+
+            error(message, duration) {
+                return this.show(message, 'error', duration);
+            }
+
+            warning(message, duration) {
+                return this.show(message, 'warning', duration);
+            }
+
+            info(message, duration) {
+                return this.show(message, 'info', duration);
+            }
+        }
+
+        // ============================================
+        // Network Monitor - Online/Offline Detection
+        // ============================================
+        class NetworkMonitor {
+            constructor(toastManager) {
+                this.toast = toastManager;
+                this.banner = document.getElementById('networkBanner');
+                this.message = document.getElementById('networkMessage');
+                this.isOnline = navigator.onLine;
+                this.init();
+            }
+
+            init() {
+                window.addEventListener('online', () => this.handleOnline());
+                window.addEventListener('offline', () => this.handleOffline());
+
+                // Check connection type if available
+                if ('connection' in navigator) {
+                    this.checkConnectionQuality();
+                }
+            }
+
+            handleOnline() {
+                this.isOnline = true;
+                this.banner.classList.add('online');
+                this.message.textContent = 'חיבור לאינטרנט שוחזר ✓';
+                this.banner.classList.add('show');
+                
+                this.toast.success('חיבור לאינטרנט שוחזר');
+
+                setTimeout(() => {
+                    this.banner.classList.remove('show');
+                    setTimeout(() => {
+                        this.banner.classList.remove('online');
+                    }, 300);
+                }, 3000);
+            }
+
+            handleOffline() {
+                this.isOnline = false;
+                this.message.textContent = '⚠️ אין חיבור לאינטרנט - המשחק יימשך במצב לא מקוון';
+                this.banner.classList.remove('online');
+                this.banner.classList.add('show');
+                
+                this.toast.warning('אין חיבור לאינטרנט', 2000);
+            }
+
+            checkConnectionQuality() {
+                const connection = navigator.connection;
+                if (connection) {
+                    const { effectiveType, saveData } = connection;
+                    
+                    if (saveData) {
+                        this.toast.info('מצב חיסכון בנתונים פעיל');
+                    }
+                    
+                    if (effectiveType === '2g' || effectiveType === 'slow-2g') {
+                        this.toast.warning('חיבור אינטרנט איטי - המשחק עשוי להיטען לאט', 4000);
+                    }
+                }
+            }
+        }
+
+        // ============================================
+        // Pull to Refresh
+        // ============================================
+        class PullToRefresh {
+            constructor(toastManager) {
+                this.toast = toastManager;
+                this.indicator = document.getElementById('pullToRefresh');
+                this.startY = 0;
+                this.currentY = 0;
+                this.pulling = false;
+                this.threshold = 80;
+                this.init();
+            }
+
+            init() {
+                const container = document.querySelector('.game-container');
+                
+                container.addEventListener('touchstart', (e) => {
+                    if (container.scrollTop === 0) {
+                        this.startY = e.touches[0].pageY;
+                        this.pulling = false;
+                    }
+                }, { passive: true });
+
+                container.addEventListener('touchmove', (e) => {
+                    if (this.startY === 0) return;
+                    
+                    this.currentY = e.touches[0].pageY;
+                    const diff = this.currentY - this.startY;
+
+                    if (diff > 10 && container.scrollTop === 0) {
+                        this.pulling = true;
+                        this.indicator.classList.add('pulling');
+                    }
+                }, { passive: true });
+
+                container.addEventListener('touchend', () => {
+                    if (this.pulling) {
+                        const diff = this.currentY - this.startY;
+                        
+                        if (diff > this.threshold) {
+                            this.refresh();
+                        }
+                    }
+                    
+                    this.startY = 0;
+                    this.currentY = 0;
+                    this.pulling = false;
+                    this.indicator.classList.remove('pulling');
+                });
+            }
+
+            refresh() {
+                this.toast.info('מרענן את המשחק...');
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }
+        }
+
+        // ============================================
+        // Version Manager - Auto Update Detection
+        // ============================================
+        class VersionManager {
+            constructor(toastManager) {
+                this.toast = toastManager;
+                this.currentVersion = APP_VERSION;
+                this.updateBanner = document.getElementById('updateBanner');
+                this.checkInterval = 300000; // 5 minutes
+                this.init();
+            }
+
+            init() {
+                this.checkStoredVersion();
+                this.startPeriodicCheck();
+                this.bindUpdateButton();
+            }
+
+            checkStoredVersion() {
+                const storedVersion = localStorage.getItem('appVersion');
+                
+                if (storedVersion && storedVersion !== this.currentVersion) {
+                    // Version changed - clear cache
+                    this.clearCacheAndUpdate();
+                }
+                
+                localStorage.setItem('appVersion', this.currentVersion);
+            }
+
+            async startPeriodicCheck() {
+                // Check immediately
+                await this.checkForUpdates();
+                
+                // Then check every 5 minutes
+                setInterval(() => {
+                    this.checkForUpdates();
+                }, this.checkInterval);
+            }
+
+            async checkForUpdates() {
+                try {
+                    const response = await fetch('version.json?t=' + Date.now());
+                    const data = await response.json();
+                    
+                    if (data.version !== this.currentVersion) {
+                        this.showUpdatePrompt(data);
+                    }
+                } catch (error) {
+                    console.log('Could not check for updates:', error);
+                }
+            }
+
+            showUpdatePrompt(versionData) {
+                this.updateBanner.classList.add('show');
+                this.toast.info('גרסה חדשה זמינה! ' + versionData.version, 5000);
+            }
+
+            bindUpdateButton() {
+                document.getElementById('updateBtn').addEventListener('click', () => {
+                    this.performUpdate();
+                });
+            }
+
+            async performUpdate() {
+                this.toast.info('מעדכן את האפליקציה...');
+                
+                // Update service worker
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        await registration.update();
+                    }
+                }
+                
+                // Clear cache and reload
+                await this.clearCacheAndUpdate();
+            }
+
+            async clearCacheAndUpdate() {
+                // Clear all caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => caches.delete(cacheName))
+                    );
+                }
+                
+                // Reload page
+                window.location.reload(true);
+            }
+        }
+
         // ============================================
         // 1. MemoryEngine - Game Logic Engine
         // ============================================
@@ -1243,6 +1750,12 @@
                 this.deferredPrompt = null;
                 this.isInstalled = false;
                 
+                // New systems
+                this.toast = new ToastManager();
+                this.networkMonitor = new NetworkMonitor(this.toast);
+                this.pullToRefresh = new PullToRefresh(this.toast);
+                this.versionManager = new VersionManager(this.toast);
+                
                 this.init();
             }
 
@@ -1376,6 +1889,8 @@
                 
                 this.saveSettings();
                 this.saveGameState();
+                
+                this.toast.success('משחק חדש התחיל!');
             }
 
             // Handle card click
@@ -1477,6 +1992,7 @@
                 if (!this.gameStarted) return;
                 this.ui.flashAllCards(this.engine.grid);
                 this.ui.triggerHaptic('light');
+                this.toast.info('💡 רמז - שים לב לקלפים!');
             }
 
             // Timer functions
@@ -1581,6 +2097,8 @@
                         accuracy: stats.accuracy,
                         date: new Date().toISOString()
                     }));
+                    
+                    this.toast.success('🏆 שיא חדש!', 5000);
                 }
                 
                 return isNewHighScore;
